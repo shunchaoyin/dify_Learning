@@ -10,7 +10,7 @@ from dify_dataset_base import DifyDatasetBaseClient
 from dify_dataset_db import DifyDatasetDBClient
 from dify_dataset_doc import DifyDatasetDocClient
 
-
+# Calculate SHA256 hash of a file
 def _sha256(file_path: Path) -> str:
     hasher = hashlib.sha256()
     with file_path.open("rb") as f:
@@ -19,19 +19,24 @@ def _sha256(file_path: Path) -> str:
     return hasher.hexdigest()
 
 
+# Load manifest from a JSON file
 def _load_manifest(manifest_path: Path) -> Dict[str, Dict[str, str]]:
     if not manifest_path.exists():
         return {}
     return json.loads(manifest_path.read_text(encoding="utf-8"))
 
-
+# Save manifest to a JSON file
 def _save_manifest(manifest_path: Path, manifest: Dict[str, Dict[str, str]]) -> None:
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
 
-
+# Collect all files in a directory recursively
 def _collect_files(doc_dir: Path) -> list[Path]:
     return [p for p in doc_dir.rglob("*") if p.is_file()]
 
+# Sync documents to Dify dataset
+# doc_dir: Directory containing documents to sync
+# manifest_path: Path to the manifest file
+# dry_run: If True, only show actions without uploading
 
 def sync_docs(doc_dir: Path, manifest_path: Path, dry_run: bool = False) -> None:
     db_client = DifyDatasetDBClient()
@@ -82,7 +87,7 @@ def sync_docs(doc_dir: Path, manifest_path: Path, dry_run: bool = False) -> None
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Incremental sync docs to Dify dataset")
-    parser.add_argument("--doc-dir", default="doc", help="Doc directory path (default: doc)")
+    parser.add_argument("--doc-dir", default="../doc", help="Doc directory path (default: ../doc)")
     parser.add_argument(
         "--manifest",
         default=".dify_doc_manifest.json",
